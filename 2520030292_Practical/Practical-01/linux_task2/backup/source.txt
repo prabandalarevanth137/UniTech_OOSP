@@ -1,2 +1,0 @@
-This is my source file for Linux Task 2.
-I am practicing copy and move commands.
