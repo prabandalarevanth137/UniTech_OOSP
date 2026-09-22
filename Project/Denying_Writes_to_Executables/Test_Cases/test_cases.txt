@@ -1,0 +1,119 @@
+========================================
+  DENYING WRITES TO EXECUTABLES
+  TEST CASES
+========================================
+
+Team No.: 6
+
+Team Members:
+P. Revanth - 2520030292
+E. Akhil   - 2520030507
+
+
+TEST CASE 1: CHECK EXECUTABLE
+----------------------------------------
+Input:
+./test.sh
+
+Operation:
+Select option 1 - Check executable
+
+Expected Result:
+Executable: YES
+
+Actual Result:
+Executable: YES
+
+Status:
+PASS
+
+
+TEST CASE 2: SHOW FILE PERMISSIONS
+----------------------------------------
+Input:
+./test.sh
+
+Operation:
+Select option 2 - Show permissions
+
+Expected Result:
+Permissions: rwxr-xr-x
+
+Actual Result:
+Permissions: rwxr-xr-x
+
+Status:
+PASS
+
+
+TEST CASE 3: DENY WRITE PERMISSION
+----------------------------------------
+Input:
+./test.sh
+
+Operation:
+Select option 3 - Deny write permission
+
+Expected Result:
+Write permission should be removed.
+
+Actual Result:
+Write permission denied successfully.
+Permissions: r-xr-xr-x
+
+Status:
+PASS
+
+
+TEST CASE 4: TEST WRITE OPERATION
+----------------------------------------
+Input:
+./test.sh
+
+Operation:
+Select option 4 - Test write operation
+after write permission is removed
+
+Expected Result:
+Write operation should be denied.
+
+Actual Result:
+Write access: DENIED
+Reason: Permission denied
+
+Status:
+PASS
+
+
+TEST CASE 5: RESTORE PERMISSIONS
+----------------------------------------
+Input:
+./test.sh
+
+Operation:
+Select option 5 - Restore permissions
+
+Expected Result:
+Original permissions should be restored.
+
+Actual Result:
+Original permissions restored.
+Permissions: rwxr-xr-x
+
+Status:
+PASS
+
+
+TEST CASE 6: EXIT PROGRAM
+----------------------------------------
+Operation:
+Select option 6 - Exit
+
+Expected Result:
+Program should terminate successfully.
+
+Actual Result:
+Exiting program...
+
+Status:
+PASS
