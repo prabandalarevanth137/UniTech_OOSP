@@ -1,147 +1,228 @@
-# UniTech_OOSP
-Denying Writes to Executables
-A Linux/C project demonstrating how write permissions on executable files can be restricted and then restored using POSIX file-permission operations.
+# Denying Writes to Executables
 
-Table of Contents
-- Introduction
-- Problem Statement
-- Objectives
-- Project Overview
-- Project Flow
-- Technologies and System Calls
-- Project Structure
-- Requirements
-- Build and Run
-- Testing and Results
-- Website and Screenshots
-- Limitations and Security Notes
-- Conclusion
-Introduction
-Executable files are important parts of a Linux system. If an executable can be modified by an unauthorized user, its contents may be changed and the program's integrity may be affected. Linux file permissions provide a basic way to control who can read, write, or execute a file.
+## 1. Introduction
 
-Denying Writes to Executables is a C project that demonstrates a permission-based approach: inspect a file's permissions, temporarily remove write permission bits, attempt a write operation, and restore the original permissions afterward. The project also includes test cases and a static website with an interactive permission simulator for learning purposes.
-Problem Statement
-A file that is executable may also have write permissions. Those write permissions can allow a user with sufficient access to modify the file. The project explores how a program can remove the file's write permission bits before attempting a write, check the result, and restore the original mode.
-Objectives
-- Inspect file metadata and permission bits.
-- Identify whether a file has executable permission bits.
-- Save the original permission mode before making changes.
-- Remove write permission bits using chmod().
-- Attempt a write operation and check whether it is denied.
-- Restore the original permission mode after the test.
-- Validate the expected behavior with automated test cases.
-- Explain the process through a browser-based project website.
-Project Overview
-At a high level, the program works with a target file and its permission mode. It uses POSIX system calls to inspect and change permissions, attempts a write, reports the result, and restores the saved mode.
+Executable files are important components of a Linux operating system. If an executable file can be modified by an unauthorized user, its contents may be changed, potentially affecting the integrity and security of the program.
 
-The website is a learning/demo interface. Its browser-based permission simulator illustrates permission changes only; it does not change permissions on real files on your computer.
-Project Flow
-                  START
-                    |
-                    v
-          Select the target file
-                    |
-                    v
-          Read file metadata (stat)
-                    |
-                    v
-       Check executable permission bits
-                    |
-                    v
-       Save the original permission mode
-                    |
-                    v
-       Remove write bits using chmod()
-                    |
-                    v
-       Open file and attempt a write
-                    |
-                    v
-       Was the write operation denied?
-              /             \\
-            Yes              No
-             |                |
-             v                v
-      Report denial     Report the result
-              \\             /
-               v           v
-          Restore original mode
-                    |
-                    v
-          Report test outcome
-                    |
-                    v
-                   END
-Important: the exact result of a write attempt depends on the file, the running user's privileges, filesystem behavior, ACLs, and other system policy. The program should always check system-call return values and handle errors.
-Technologies and System Calls
-- C — implementation language.
-- Linux / POSIX APIs — file and permission operations.
-- stat() — obtains file metadata, including mode bits.
-- chmod() — changes file permission bits.
-- open() — opens the target file.
-- write() — attempts to write data to the file.
-- close() — closes the file descriptor.
-- Bash — runs the automated test script.
-- HTML, CSS, JavaScript — project information website and browser-side demo.
-Project Structure
-The repository currently includes the following key items:
+Linux provides file permissions to control who can read, write, and execute files.
+
+**Denying Writes to Executables** is a C-based project that demonstrates how write permissions can be temporarily removed from an executable file, how a write operation can be tested, and how the original permissions can be restored afterward.
+
+The project uses POSIX system calls and includes automated test cases and a website that explains the concepts interactively.
+
+## 2. Problem Statement
+
+Executable files may have both execution and write permissions. If a user has sufficient access to modify such a file, its contents can be changed.
+
+The objective of this project is to demonstrate how a program can inspect file permissions, remove write permission bits, attempt a write operation, verify the result, and restore the original permissions.
+
+## 3. Objectives
+
+- To understand Linux file permissions.
+- To identify executable permission bits.
+- To inspect file metadata using `stat()`.
+- To save the original file permission mode.
+- To remove write permissions using `chmod()`.
+- To attempt a write operation using `open()` and `write()`.
+- To verify whether the write operation is denied.
+- To restore the original permissions.
+- To test the program using automated test cases.
+- To provide an interactive website for understanding the project.
+
+## 4. Project Overview
+
+The project demonstrates a permission-based approach to restricting ordinary write access to executable files.
+
+The program examines a target file, saves its original permissions, removes the write permission bits, attempts a write operation, checks the result, and restores the original permission mode.
+
+The project also includes a static website that explains the workflow, POSIX system calls, file permission modes, and security limitations.
+
+## 5. Project Flow
+
+The project follows these steps:
+
+1. **Start the program** — select the target file.
+2. **Inspect the file** — use `stat()` to obtain file metadata.
+3. **Check executable permissions** — determine whether executable permission bits are set.
+4. **Save the original permissions** — preserve the original permission mode.
+5. **Remove write permissions** — use `chmod()` to remove the write bits.
+6. **Attempt a write operation** — open the file and try to write data.
+7. **Check the result** — determine whether the write operation succeeded or was denied.
+8. **Restore permissions** — restore the original permission mode.
+9. **Display the result** — report the outcome of the test.
+
+### Flowchart
+
+```text
+          START
+            |
+            v
+      Select target file
+            |
+            v
+     Inspect file using stat()
+            |
+            v
+   Check executable permissions
+            |
+            v
+   Save original permission mode
+            |
+            v
+    Remove write bits using chmod()
+            |
+            v
+    Attempt write using open()/write()
+            |
+            v
+      Check write result
+            |
+            v
+   Restore original permissions
+            |
+            v
+      Display test result
+            |
+            v
+           END
+```
+
+## 6. Technologies Used
+
+- **C Programming Language:** Implements the permission-handling logic.
+- **Linux:** Provides the operating-system environment.
+- **POSIX System Calls:** Used for file metadata, permissions, and file operations.
+- **Bash:** Runs the automated test script.
+- **HTML:** Defines the website structure.
+- **CSS:** Provides website styling and layout.
+- **JavaScript:** Supports interactive website features.
+- **GitHub:** Stores and shares the project source code and website files.
+
+## 7. System Calls Used
+
+| System Call | Purpose |
+|---|---|
+| `stat()` | Retrieves file metadata and permission bits. |
+| `chmod()` | Changes file permission bits. |
+| `open()` | Opens a file for an operation. |
+| `write()` | Attempts to write data to a file. |
+| `close()` | Closes an open file descriptor. |
+
+## 8. Project Structure
+
+```text
 Denying_Writes_to_Executables/
+│
 ├── Test_Cases/
+│   └── Project test cases
+│
 ├── src/
+│   └── C source code and test support files
+│
 ├── README.md
 ├── index.html
 ├── style.css
 └── script.js
-- src/ — C source code and test/run support files.
-- Test_Cases/ — project test cases.
-- index.html — website structure and content.
-- style.css — website layout and visual styling.
-- script.js — browser-side interactive behavior.
-- README.md — project documentation.
-Requirements
-- A Linux environment or compatible POSIX environment.
+```
+
+### File Description
+
+- **src/** — contains the C source code and related support files.
+- **Test_Cases/** — contains the project's test cases.
+- **README.md** — provides project documentation.
+- **index.html** — contains the website structure and content.
+- **style.css** — controls the website's appearance.
+- **script.js** — implements interactive website behavior.
+
+## 9. Requirements
+
+The project requires:
+
+- A Linux or compatible POSIX environment.
 - A C compiler such as GCC.
-- Bash to run the provided test script.
-- A browser to view the static website.
-Build and Run
-From the project directory, run the automated test script:
+- Bash to run the test script.
+- A web browser to view the project website.
+
+## 10. How to Run the Project
+
+Open a terminal and navigate to the project directory.
+
+Run the automated test script:
+
+```bash
 cd ~/Denying_Writes_to_Executables
 bash src/test.sh
-If your project is stored in a different location, change the cd path accordingly.
+```
 
-To compile manually, first inspect the source files in src/ and use the actual C source filename. For example:
-gcc -Wall -Wextra -o deny_writes src/<source_file>.c
-Replace <source_file>.c with the real filename in your repository. Run the compiled program only with a test file you are allowed to modify, and keep a backup of important files.
+If your project is saved in a different location, replace the directory path with your actual project location.
 
-To view the website locally, open index.html in a browser. No web framework is required for the static site.
-Testing and Results
-The automated test run recorded for this project reported that all five permission tests passed:
-1. Checking executable permission — PASS
-2. Checking initial write permission — PASS
-3. Removing write permission — PASS
-4. Verifying write denial — PASS
-5. Restoring permissions — PASS
-The test output reported: “All automated permission tests passed.”
-Example permission change
-For a file with mode 0754, removing all write bits results in mode 0554:
-Mode	Owner	Group	Others
-0754	Read, write, execute	Read, execute	Read
-0554	Read, execute	Read, execute	Read
+To view the website, open `index.html` in a web browser.
 
+**Note:** Run permission-changing tests only on files you own or are authorized to modify. Use a disposable test file rather than an important executable.
 
-This is an illustrative example. The actual mode depends on the target file's original permissions.
-Website
-The project website includes an overview, a workflow explanation, an interactive permission simulator, a POSIX system-call explorer, a permission calculator, run instructions, and security limitations.
+## 11. Testing and Results
 
-To view the static website locally, open index.html in a web browser. The browser-based simulator is for learning and does not change permissions on real files.
-Limitations and Security Notes
-- This project demonstrates ordinary Unix permission-bit behavior; it is not a complete executable-integrity security system.
-- Removing write bits with chmod() does not prevent every possible modification. A privileged process (such as root), ACLs, capabilities, filesystem policies, or other mechanisms may change the outcome.
-- Permission changes affect the real target file when the C program is run. Test only on a disposable file you own or are authorized to modify.
-- The original mode should be restored even when errors occur. Production-quality code should handle failures carefully and use appropriate cleanup paths.
-- The website's simulator is browser-only and does not modify real files.
-Conclusion
-This project demonstrates how Linux permission bits and POSIX system calls can be used to restrict ordinary write access to an executable during a test, verify the result, and restore the original permissions. It combines a C implementation, automated tests, and a static learning website to make the concept easier to understand.
-Project: Denying Writes to Executables
-Language: C
-Environment: Linux / POSIX
+The automated test run recorded for this project reported that all five permission tests passed.
+
+| Test No. | Test Description | Result |
+|---|---|---|
+| 1 | Checking executable permission | PASS |
+| 2 | Checking initial write permission | PASS |
+| 3 | Removing write permission | PASS |
+| 4 | Verifying write denial | PASS |
+| 5 | Restoring permissions | PASS |
+
+**Final Result:** All automated permission tests passed.
+
+## 12. Example of Permission Changes
+
+Consider a file with permission mode `0754`.
+
+| Permission Mode | Owner | Group | Others |
+|---|---|---|---|
+| `0754` | Read, write, execute | Read, execute | Read |
+| `0554` | Read, execute | Read, execute | Read |
+
+In this example, changing the mode from `0754` to `0554` removes the write permission bits while preserving the other permission bits.
+
+The actual permission mode depends on the target file's original permissions.
+
+## 13. Website Overview
+
+The project website provides an interactive way to understand the concepts behind the implementation.
+
+Its features include:
+
+- Project introduction and overview.
+- Explanation of the project workflow.
+- Interactive file-permission simulator.
+- POSIX system-call explanations.
+- Permission-mode calculator.
+- Build and execution instructions.
+- Security limitations and considerations.
+
+The website's permission simulator is a browser-based demonstration. It does not change permissions on real files.
+
+## 14. Limitations and Security Considerations
+
+- Removing write permission bits is not a complete executable-integrity security solution.
+- A privileged user, such as root, may still be able to modify file permissions or file contents.
+- Access-control lists, filesystem policies, and other security mechanisms can affect the outcome.
+- The program must check system-call return values and handle errors properly.
+- The original permission mode should be restored even when an operation fails.
+- Permission-changing tests should be performed only on files that the user is authorized to modify.
+
+## 15. Conclusion
+
+The **Denying Writes to Executables** project demonstrates how Linux file permissions and POSIX system calls can be used to inspect file permissions, remove write permission bits, attempt a write operation, verify the result, and restore the original permissions.
+
+The project combines C programming, Linux file-permission concepts, automated testing, and an interactive website to provide a practical learning experience.
+
+## 16. Project Information
+
+- **Project Name:** Denying Writes to Executables
+- **Programming Language:** C
+- **Operating System:** Linux
+- **APIs:** POSIX system calls
+- **Website Technologies:** HTML, CSS, JavaScript
+- **Testing:** Bash automated test script
