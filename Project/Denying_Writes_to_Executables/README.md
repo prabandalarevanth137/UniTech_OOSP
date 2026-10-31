@@ -1,60 +1,31 @@
 # Denying Writes to Executables
 
-## Project Overview
+A static cybersecurity project site about Linux file permissions, C, and POSIX system calls. It includes a browser-side permission simulator and octal-to-symbolic permission calculator.
 
-Denying Writes to Executables is a Linux-based system programming project that demonstrates how executable files can be protected from unwanted modifications using Linux file permissions.
+## Preview
 
-The project identifies executable files, checks their permissions, removes write permission when protection is required, and tests whether a write operation is allowed or denied.
+Open `index.html` directly in a browser, or open this folder in VS Code and use the Live Server extension (`Open with Live Server`). There is no build step, backend, or package installation. Google Fonts are loaded online; fallback system fonts are used offline.
 
-## Team Members
+## Files
 
-- P. Revanth - 2520030292
-- E. Akhil - 2520030507
+- `index.html` — page structure and project content
+- `style.css` — responsive visual design and component styles
+- `script.js` — simulator, calculator, mobile navigation, and copy buttons
+- `README.md` — setup and usage instructions
 
-## Objectives
+## Permission lab
 
-- Understand Linux file permissions and access control.
-- Identify executable files.
-- Inspect file information using `stat()`.
-- Restrict write permissions using `chmod()`.
-- Test write operations using `open()` and `write()`.
-- Handle permission errors using `errno`.
-- Understand file descriptors and Linux/POSIX system calls.
+The simulator starts at `754` (`rwxr-xr--`). Removing all write bits applies the `0222` mask and changes the mode to `554` (`r-xr-xr--`). The simulated write control checks the owner-write bit. Reset returns the model to `754`. Neither interactive tool accesses files or runs the C program.
 
-## Technologies Used
+The calculator accepts exactly three digits from `0` through `7`, converts valid octal modes to symbolic permissions, and reports invalid input.
 
-- Linux / Ubuntu
-- C Programming
-- GCC Compiler
-- Linux/POSIX System Calls
-- Terminal / VS Code
+## Compile and run a C implementation
 
-## Linux/POSIX APIs Used
+These example commands assume that you have created `permission_check.c` and have GCC on Linux:
 
-| API | Purpose |
-|---|---|
-| `stat()` | Obtains file information and permissions |
-| `chmod()` | Changes file permissions |
-| `open()` | Opens a file with a requested access mode |
-| `write()` | Attempts to write data to the file |
-| `close()` | Closes the file descriptor |
-| `errno` | Provides information about system call errors |
+```sh
+gcc -Wall -Wextra -o permission_check permission_check.c
+./permission_check ./target.bin
+```
 
-## Working
-
-1. The user enters the executable file path.
-2. The program uses `stat()` to inspect the file.
-3. The program checks whether the file has execute permission.
-4. The current read, write, and execute permissions are displayed.
-5. The program removes write permission using `chmod()`.
-6. The program attempts to write to the protected file.
-7. Linux denies the write operation when write permission is unavailable.
-8. The program displays the error using `errno` and `strerror()`.
-9. The original permissions are restored.
-
-## Compilation
-
-Enter the `src` directory:
-
-```bash
-cd src
+The website contains illustrative snippets only; it does not supply or execute a C implementation. Run a program only against files you are authorized to inspect. A complete implementation should preserve and safely restore the original mode, check system-call return values, and account for ownership, privileges, ACLs, and other access controls.

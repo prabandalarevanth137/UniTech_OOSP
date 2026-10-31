@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080b10">
+  <meta name="description" content="A Linux systems security project demonstrating executable permission controls with C and POSIX system calls.">
+  <title>Denying Writes to Executables | Systems Security Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+<header class="site-header"><div class="shell nav-shell">
+  <a class="brand" href="#home" aria-label="Denying Writes to Executables home"><span class="brand-icon">D<span>·</span></span><span class="brand-name">SYSSEC <small>/ FIELD NOTES 04</small></span></a>
+  <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Open navigation"><span></span><span></span></button>
+  <nav id="primary-nav" class="primary-nav" aria-label="Main navigation"><a href="#overview">Overview</a><a href="#workflow">Workflow</a><a href="#permission-lab">Permission lab</a><a href="#calculator">Calculator</a><a href="#code">C explorer</a><a class="nav-link-strong" href="#testing">Build guide <span aria-hidden="true">↗</span></a><button class="search-open" id="open-search" type="button" aria-haspopup="dialog"><span>⌕</span> Search <kbd>Ctrl K</kbd></button></nav>
+</div></header>
+<dialog class="search-dialog" id="site-search" aria-labelledby="search-title"><form method="dialog" class="search-top"><label id="search-title" for="search-input">Search project notes</label><button type="submit" aria-label="Close search">ESC</button></form><input id="search-input" type="search" placeholder="Search permissions, calls, testing…" autocomplete="off"><nav id="search-results" class="search-results" aria-label="Search results"></nav><p class="search-hint">Type to filter · Tab to navigate · Enter to open · Esc to close</p></dialog>
+<main id="main-content">
+<section class="hero" id="home"><div class="hero-grid" aria-hidden="true"></div><div class="shell hero-layout">
+  <div class="hero-copy"><p class="eyebrow"><span class="live-dot"></span> LINUX SYSTEMS SECURITY <span class="eyebrow-divider">/</span> PERMISSION CONTROL</p>
+    <h1>Denying Writes<br>to <span>Executables.</span></h1><p class="hero-lede">Demonstrating Linux file-permission controls through C and POSIX system calls.</p>
+    <div class="hero-actions"><a class="button button-primary" href="#overview">Explore project <span>↓</span></a><a class="button button-quiet" href="#permission-lab"><span class="play-icon">▶</span> Launch Permission Lab</a></div>
+    <div class="hero-meta"><span><b>01</b> inspect</span><i></i><span><b>02</b> restrict</span><i></i><span><b>03</b> verify</span></div>
+  </div>
+  <div class="hero-visual" aria-label="Executable mode 754 changes to protected mode 554"><div class="visual-topline"><span>PERMISSION TRANSITION</span><span class="visual-index">FIG 01 — MODE BITS</span></div>
+    <div class="file-state state-before"><div class="file-symbol"><span></span><span></span><span></span><i>EXE</i></div><div class="file-info"><small>EXECUTABLE / BEFORE</small><strong>worker.bin</strong><code>rwxr-xr-- <em>0754</em></code></div><div class="state-badge badge-write">WRITE ENABLED</div></div>
+    <div class="transition"><span class="transition-line"></span><span class="transition-label"><code>chmod()</code><b>clear 0222</b></span><span class="transition-line"></span></div>
+    <div class="file-state state-after"><div class="file-symbol shield-symbol"><span></span><span></span><span></span><i>EXE</i></div><div class="file-info"><small>EXECUTABLE / PROTECTED</small><strong>worker.bin</strong><code>r-xr-xr-- <em>0554</em></code></div><div class="state-badge badge-locked">WRITE REMOVED</div></div>
+    <div class="visual-footer"><span class="terminal-prompt">$</span><span>Permission bits updated</span><span class="visual-ok">●</span></div>
+  </div>
+</div><div class="shell hero-bottom"><span>ENGINEERING NOTE <b>—</b> FILE MODE IS A CONTROL, NOT A COMPLETE SECURITY BOUNDARY</span><a href="#overview">Scroll to explore <span>↓</span></a></div></section>
+
+<section class="section" id="overview"><div class="shell"><div class="section-heading"><div><p class="section-label">01 <span>/</span> PROJECT OVERVIEW</p><h2>Make file integrity<br><span>visible and testable.</span></h2></div><p class="heading-aside">A focused systems exercise: inspect a file’s mode, remove write access, then observe how the kernel handles a write attempt.</p></div>
+  <div class="overview-grid"><article class="overview-card"><span class="card-index">A / THE PROBLEM</span><div class="card-glyph">↗</div><h3>Writable binaries can be changed.</h3><p>If a process can write to an executable, its contents may be modified, corrupted, or replaced. This project examines the file-mode layer of that risk.</p></article>
+  <article class="overview-card"><span class="card-index">B / THE OBJECTIVE</span><div class="card-glyph">◎</div><h3>Inspect before changing access.</h3><p>Read metadata, identify execute bits, present the current mode, and make each permission change observable.</p></article>
+  <article class="overview-card"><span class="card-index">C / THE APPROACH</span><div class="card-glyph">⌘</div><h3>Use standard POSIX calls.</h3><p>Combine <code>stat()</code>, <code>chmod()</code>, and file I/O operations in a C workflow with explicit error reporting.</p></article>
+  <article class="overview-card"><span class="card-index">D / EXPECTED OUTCOME</span><div class="card-glyph">✓</div><h3>A repeatable permission check.</h3><p>Demonstrate how clearing write bits affects an ordinary write attempt and how saved permissions can be restored.</p></article></div>
+  <div class="permission-primer"><div><p class="card-index">PERMISSION MODEL / WHY IT MATTERS</p><h3>Executable status and write access are separate bits.</h3></div><p>Linux stores read, write, and execute permissions for owner, group, and others. An executable is not automatically protected from edits: a class with write permission may modify its contents. Clearing write bits reduces access for those classes while leaving execute bits intact. The kernel evaluates access for the calling process using ownership, credentials, ACLs, and other policy too.</p></div>
+</div></section>
+
+<section class="section section-alt" id="workflow"><div class="shell"><div class="section-heading"><div><p class="section-label">02 <span>/</span> CONTROL FLOW</p><h2>Inspect <span>→</span> restrict <span>→</span> verify.</h2></div><p class="heading-aside">The sequence makes state changes and error paths part of the program’s output.</p></div>
+  <div class="workflow-board"><article class="workflow-step"><span class="step-num">01</span><div><h3>Inspect metadata</h3><p>Call <code>stat()</code> and capture the file mode.</p></div><span class="step-call">stat()</span></article>
+  <article class="workflow-step"><span class="step-num">02</span><div><h3>Check executable bits</h3><p>Test owner, group, and others execute flags.</p></div><span class="step-call">S_IX*</span></article>
+  <article class="workflow-step"><span class="step-num">03</span><div><h3>Display current mode</h3><p>Report numeric and symbolic permissions.</p></div><span class="step-call">mode → rwx</span></article>
+  <article class="workflow-step"><span class="step-num">04</span><div><h3>Remove write bits</h3><p>Clear the write mask while retaining other bits.</p></div><span class="step-call">chmod()</span></article>
+  <article class="workflow-step"><span class="step-num">05</span><div><h3>Attempt a write</h3><p>Open with <code>O_WRONLY</code> and report the result.</p></div><span class="step-call">open()</span></article>
+  <article class="workflow-step"><span class="step-num">06</span><div><h3>Report the result</h3><p>Inspect the return value and report the relevant error.</p></div><span class="step-call">errno · strerror()</span></article>
+  <article class="workflow-step"><span class="step-num">07</span><div><h3>Restore permissions</h3><p>Reapply the saved original mode when requested.</p></div><span class="step-call">chmod(saved)</span></article></div>
+  <div class="workflow-foot"><span><i class="legend-dot"></i> FILE METADATA</span><span><i class="legend-dot legend-cyan"></i> MODE UPDATE</span><span><i class="legend-dot legend-muted"></i> WRITE TEST &amp; RESTORE</span></div>
+</div></section>
+
+<section class="section" id="permission-lab"><div class="shell"><div class="section-heading"><div><p class="section-label">03 <span>/</span> INTERACTIVE PERMISSION LAB</p><h2>Work the <span>mode bits.</span></h2></div><p class="heading-aside">A browser-side model of a file mode. Change the permission mask and inspect the simulated access result.</p></div>
+  <div class="lab-shell"><div class="lab-main"><div class="lab-toolbar"><div class="lab-file"><span class="file-tile">▤</span><span><small>SIMULATED FILE</small><strong>worker.bin</strong></span></div><span class="model-pill"><i></i> IN-MEMORY MODEL</span></div>
+    <div class="mode-display"><div><small>OCTAL MODE</small><div class="octal-value" id="lab-octal">754</div></div><div class="mode-divider"></div><div class="symbolic-block"><small>SYMBOLIC MODE</small><div class="symbolic-value" id="lab-symbolic">rwxr-xr--</div></div><div class="mode-status" id="lab-state"><span class="state-indicator"></span><span>OWNER WRITE<br><b>ENABLED</b></span></div></div>
+    <div class="permission-groups" id="permission-groups" aria-label="Individual permission bits"></div>
+    <div class="lab-controls"><button class="button button-primary" type="button" id="remove-writes">Remove all write bits <span>→</span></button><button class="button button-outline" type="button" id="try-write">Attempt simulated write</button><button class="button button-outline" type="button" id="copy-mode">Copy current mode</button><button class="button button-text" type="button" id="reset-lab">Reset</button></div>
+    <div class="lab-output" id="lab-output" role="status" aria-live="polite"><span class="output-mark">›</span><span>Ready. Mode <code>754</code> gives the owner write permission.</span><span class="output-time">MODEL</span></div>
+    <p class="lab-disclaimer"><span>i</span> Simulation only. This page does not access or change files on your device or run the C program.</p>
+  </div><aside class="lab-side"><p class="side-label">MODE BREAKDOWN</p><h3>Three classes.<br>Three permission bits.</h3><p>Each octal digit represents owner, group, or others. Read = 4, write = 2, execute = 1.</p>
+    <div class="breakdown-row"><span>OWNER</span><code id="owner-bits">rwx</code><b id="owner-octal">7</b></div><div class="breakdown-row"><span>GROUP</span><code id="group-bits">r-x</code><b id="group-octal">5</b></div><div class="breakdown-row"><span>OTHERS</span><code id="others-bits">r--</code><b id="others-octal">4</b></div>
+    <div class="mask-note"><small>WRITE MASK</small><code>~0222</code><p>Clears write bits in every class. <b>754 → 554</b></p></div>
+  </aside></div>
+</div></section>
+
+<section class="section section-alt" id="code"><div class="shell"><div class="section-heading"><div><p class="section-label">04 <span>/</span> C SYSTEM CALL EXPLORER</p><h2>Small calls. <span>Explicit outcomes.</span></h2></div><p class="heading-aside">Illustrative snippets for a C implementation. Check each return value and preserve the original mode before changing it.</p></div>
+  <div class="code-layout"><div class="code-window"><div class="code-window-top"><div class="window-dots"><i></i><i></i><i></i></div><span>permission_check.c</span><span class="language-tag">C / POSIX</span></div>
+<pre aria-label="Illustrative C code"><code><span class="code-comment">/* Inspect the file and save its permission bits. */</span>
+<span class="code-type">struct stat</span> info;
+<span class="code-keyword">if</span> (<span class="code-function">stat</span>(path, &amp;info) == -1) {
+    <span class="code-function">perror</span>(<span class="code-string">"stat"</span>);
+    <span class="code-keyword">return</span> 1;
+}
+mode_t original = info.st_mode &amp; <span class="code-number">0777</span>;
+
+<span class="code-comment">/* Remove write bits, then test write access. */</span>
+<span class="code-keyword">if</span> (<span class="code-function">chmod</span>(path, original &amp; ~<span class="code-number">0222</span>) == -1)
+    <span class="code-function">perror</span>(<span class="code-string">"chmod"</span>);
+<span class="code-keyword">int</span> fd = <span class="code-function">open</span>(path, O_WRONLY);
+<span class="code-keyword">if</span> (fd == -1) {
+    <span class="code-keyword">int</span> error = errno;
+    <span class="code-function">fprintf</span>(stderr, <span class="code-string">"open: %s\n"</span>,
+            <span class="code-function">strerror</span>(error));
+} <span class="code-keyword">else</span> {
+    <span class="code-function">write</span>(fd, data, length);
+    <span class="code-function">close</span>(fd);
+}</code></pre><div class="code-caption"><i class="caption-dot"></i>Illustrative only — add headers, validate inputs, and handle every error in a complete program.</div></div>
+  <div class="api-explorer"><div class="call-list" role="group" aria-label="Select a C API to explain">
+  <button class="call-item is-selected" type="button" data-api="stat"><code>stat()</code><span>File metadata</span></button>
+  <button class="call-item" type="button" data-api="chmod"><code>chmod()</code><span>Change permissions</span></button>
+  <button class="call-item" type="button" data-api="open"><code>open()</code><span>Request access</span></button>
+  <button class="call-item" type="button" data-api="write"><code>write()</code><span>Write bytes</span></button>
+  <button class="call-item" type="button" data-api="close"><code>close()</code><span>Release descriptor</span></button>
+  <button class="call-item" type="button" data-api="errno"><code>errno</code><span>Error number</span></button>
+  <button class="call-item" type="button" data-api="strerror"><code>strerror()</code><span>Error text</span></button>
+  <button class="call-item" type="button" data-api="constants"><code>mode flags</code><span>Permission constants</span></button>
+  </div><article class="api-detail" id="api-detail" aria-live="polite"><div class="api-detail-top"><p class="card-index">API EXPLORER / SELECTED</p><button type="button" class="copy-example" id="copy-example">Copy snippet</button></div><h3 id="api-title">stat() — inspect metadata</h3><p id="api-description">stat() reads metadata for a path into struct stat. Use st_mode to inspect permission bits, and check for a return value of -1 before using the result.</p><pre id="api-example"><code>struct stat info;
+if (stat(path, &amp;info) == -1) {
+    perror("stat");
+}</code></pre></article></div></div>
+</div></section>
+
+<section class="section calculator-section" id="calculator"><div class="shell calculator-layout"><div><p class="section-label">05 <span>/</span> LINUX PERMISSION CALCULATOR</p><h2>Decode an <span>octal mode.</span></h2><p class="calculator-intro">Enter three octal digits from <code>000</code> to <code>777</code>. Each digit maps to owner, group, and others. Select an example to load it.</p><div class="calculator-examples"><button type="button" data-example-mode="755"><b>755</b> rwxr-xr-x</button><button type="button" data-example-mode="644"><b>644</b> rw-r--r--</button><button type="button" data-example-mode="554"><b>554</b> r-xr-xr--</button></div></div>
+  <form class="calculator" id="permission-form" novalidate><label for="permission-input">OCTAL PERMISSIONS</label><div class="calculator-input-row"><span class="input-prefix">0</span><input id="permission-input" name="permissions" type="text" inputmode="numeric" autocomplete="off" maxlength="3" value="754" aria-describedby="calculator-message"><button type="submit" class="button button-primary">Convert <span>↗</span></button></div><p class="form-message" id="calculator-message" role="status" aria-live="polite">Enter exactly three digits, each between 0 and 7.</p><div class="calculator-result"><small>SYMBOLIC RESULT</small><code id="calculator-result">rwxr-xr--</code><button type="button" id="copy-calculation" class="copy-example">Copy result</button></div></form>
+</div></section>
+
+<section class="section" id="testing"><div class="shell testing-layout"><div><p class="section-label">06 <span>/</span> BUILD &amp; RUN</p><h2>Run the C program<br><span>on Linux.</span></h2><p class="testing-copy">The website is static. To run the system-call experiment, compile the C source in a Linux environment. No C execution or test results are represented by this page.</p><a class="text-link" href="#limitations">Review security limitations <span>→</span></a></div>
+  <div class="commands"><div class="command-heading"><span>TERMINAL</span><span>LOCAL LINUX ENVIRONMENT</span></div><div class="command-line"><span>01</span><code>gcc -Wall -Wextra -o permission_check permission_check.c</code><button type="button" class="copy-command" data-copy="gcc -Wall -Wextra -o permission_check permission_check.c" aria-label="Copy compile command">COPY</button></div><div class="command-line"><span>02</span><code>./permission_check ./target.bin</code><button type="button" class="copy-command" data-copy="./permission_check ./target.bin" aria-label="Copy run command">COPY</button></div><div class="command-foot" id="copy-feedback" aria-live="polite">Replace paths with the source and executable you intend to test.</div><div class="expected-behavior"><b>What to expect</b><p>If the calling process lacks effective write access, a write-only open commonly fails with <code>EACCES</code>. A privileged process or another access-control rule can change that outcome. A successful open does not prove bytes were written; check <code>write()</code> and handle partial writes.</p></div></div>
+</div></section>
+
+<section class="section" id="limitations"><div class="shell"><div class="section-heading"><div><p class="section-label">07 <span>/</span> SECURITY LIMITATIONS</p><h2>Mode bits are <span>one layer.</span></h2></div><p class="heading-aside">Removing write bits can reduce ordinary access. It does not guarantee that a file cannot be changed.</p></div>
+  <div class="limits-grid"><article><span>01</span><h3>Ownership &amp; privileges</h3><p>Only an authorized owner or privileged process can change many file modes. A process with sufficient privilege may still write.</p></article><article><span>02</span><h3>ACLs &amp; access context</h3><p>Access control lists, directory permissions, mount options, capabilities, and security modules can affect effective access.</p></article><article><span>03</span><h3>Permission changes</h3><p>Mode bits can be changed again by an authorized process. A check followed by use can also create race conditions.</p></article><article><span>04</span><h3>Restore carefully</h3><p>Save the original mode and restore it only when appropriate. Handle failures so a temporary change does not leave unexpected state.</p></article></div>
+  <div class="limit-banner"><span class="banner-icon">!</span><p><b>Interpret results in context.</b> A denied open() is evidence about that process and environment at that moment, not proof of universal immutability.</p></div>
+</div></section>
+</main>
+<footer class="site-footer"><div class="shell footer-main"><a class="brand" href="#home"><span class="brand-icon">D<span>·</span></span><span class="brand-name">SYSSEC <small>/ FIELD NOTES 04</small></span></a><p>Denying Writes to Executables<br><span>Linux permissions · C · POSIX</span></p><nav aria-label="Footer navigation"><a href="#overview">Overview</a><a href="#permission-lab">Permission lab</a><a href="#code">C explorer</a><a href="#testing">Build guide</a></nav></div><div class="shell footer-bottom"><span>STATIC WEBSITE · RUNS LOCALLY</span><a href="#home">BACK TO TOP ↑</a></div></footer>
+</body></html>
